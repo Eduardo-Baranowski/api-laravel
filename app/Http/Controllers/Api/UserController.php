@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\DB;
 class UserController extends Controller
 {
     public function index() : JsonResponse{
-        $users = User::orderBy('id', 'DESC')->paginate(2);
+        $users = User::orderBy('id', 'DESC')->paginate(10);
         return response()->json([
             'status' => true,
             'users' => $users,
@@ -102,6 +102,21 @@ class UserController extends Controller
                 'status' => false,
                 'message' => 'Usuário não apagado!',
             ], 400);
+        }
+    }
+
+    public function logout(User $user): JsonResponse {
+        try {
+            $user->tokens()->delete();
+            return response()->json([
+                'status' => true,
+                'message' => 'Logout realizado com sucesso!',
+            ], 200);
+        }catch(Exception $e){
+            return response()->json([
+                'status' => false,
+                'message' => 'Erro ao fazer logout!',
+            ], 500);
         }
     }
 }
