@@ -17,9 +17,15 @@ class NoticiaController extends Controller
 {
     public function index(Request $request) : JsonResponse{
         $search = $request->get('title');
-        $noticias = Noticia::orderBy('id', 'ASC')->where(
-            'id_user', Auth::user()->getAuthIdentifier()
-        )->where('title', 'like', '%' .$search. '%')->paginate(10);
+
+        $query = Noticia::orderBy('id', 'ASC')
+            ->where('id_user', Auth::id());
+
+        if (!empty($search)) {
+            $query->where('title', 'like', '%' . $search . '%');
+        }
+
+        $noticias = $query->paginate(10);
         return response()->json([
             'status' => true,
             'noticias' => $noticias,
