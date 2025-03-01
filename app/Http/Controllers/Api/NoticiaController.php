@@ -8,14 +8,18 @@ use App\Http\Requests\UserRequest;
 use App\Models\Noticia;
 use App\Models\User;
 use Exception;
+use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class NoticiaController extends Controller
 {
-    public function index() : JsonResponse{
-        $noticias = Noticia::orderBy('id', 'ASC')->where('id_user', Auth::user()->getAuthIdentifier())->paginate(10);
+    public function index(Request $request) : JsonResponse{
+        $search = $request->get('title');
+        $noticias = Noticia::orderBy('id', 'ASC')->where(
+            'id_user', Auth::user()->getAuthIdentifier()
+        )->where('title', 'like', '%' .$search. '%')->paginate(10);
         return response()->json([
             'status' => true,
             'noticias' => $noticias,
