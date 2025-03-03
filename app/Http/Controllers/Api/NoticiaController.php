@@ -25,7 +25,9 @@ class NoticiaController extends Controller
             $query->where('title', 'like', '%' . $search . '%');
         }
 
+
         $noticias = $query->paginate(10);
+
         return response()->json([
             'status' => true,
             'noticias' => $noticias,

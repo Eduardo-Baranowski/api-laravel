@@ -7,6 +7,7 @@ use App\Http\Requests\UserRequest;
 use App\Models\User;
 use Exception;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class UserController extends Controller
@@ -59,20 +60,27 @@ class UserController extends Controller
         DB::beginTransaction();
 
         try{
-            $user->update([
-                'name' => $request->name,
-                'email' => $request->email,
-                'password' => $request->password,
-            ]);
+            $isAdmin = Auth::user()['admin'];
+            if($isAdmin == 1) {
+                $user->update([
+                    'name' => $request->name,
+                    'email' => $request->email,
+                    'password' => $request->password,
+                ]);
 
-            DB::commit();
+                DB::commit();
 
-            return response()->json([
-                'status' => true,
-                'user' => $user,
-                'message' => 'Usuário editado com sucesso!',
-            ], 200);
-
+                return response()->json([
+                    'status' => true,
+                    'user' => $user,
+                    'message' => 'Usuário editado com sucesso!',
+                ], 200);
+            } else {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Usuário não possui permissão para atualizar!',
+                ], 400);
+            }
         }catch(Exception $e){
             DB::rollBack();
             return response()->json([
@@ -80,23 +88,25 @@ class UserController extends Controller
                 'message' => 'Usuário não editado!',
             ], 400);
         }
-
-        return response()->json([
-            'status' => true,
-            'user' => $user,
-            'message' => 'Usuário atualizado com sucesso!',
-        ], 200);
     }
 
     public function destroy(User $user) : JsonResponse{
         try{
-            $user->delete();
+            $isAdmin = Auth::user()['admin'];
+            if($isAdmin == 1) {
+                $user->delete();
 
-            return response()->json([
-                'status' => true,
-                'user' => $user,
-                'message' => 'Usuário deletado com sucesso!',
-            ], 200);
+                return response()->json([
+                    'status' => true,
+                    'user' => $user,
+                    'message' => 'Usuário deletado com sucesso!',
+                ], 200);
+            } else {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Usuário não possui permissão para deletar!',
+                ], 400);
+            }
         }catch(Exception $e){
             return response()->json([
                 'status' => false,
